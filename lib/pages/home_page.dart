@@ -144,7 +144,7 @@ class _HomePageState extends State<HomePage> {
           decoration: BoxDecoration(
             image: DecorationImage(
               image: bgImage,
-              fit: BoxFit.fitWidth,
+              fit: BoxFit.cover,
             ),
           ),
           child: Column(
