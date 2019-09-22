@@ -71,3 +71,6 @@
 
 # App secrets
 secrets.json
+
+# For Alibaba
+**/ios/TaobaoEnv
