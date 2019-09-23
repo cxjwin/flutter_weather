@@ -41,6 +41,7 @@ class SecretLoader {
 
     await rootBundle.loadStructuredData<Secret>('secrets.json', (jsonStr) {
       _secret = Secret.fromJson(json.decode(jsonStr));
+      return;
     });
   }
 }

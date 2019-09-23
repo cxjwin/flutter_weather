@@ -1,7 +1,11 @@
 source 'https://github.com/CocoaPods/Specs.git'
-include_official_source!
+
 # Uncomment this line to define a global platform for your project
-# platform :ios, '9.0'
+platform :ios, '9.0'
+
+if respond_to?(:include_official_source!) 
+  include_official_source!
+end
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
