@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_weather/models/weather_data.dart';
 import 'package:flutter_weather/utils/weather_icons.dart';
+import 'package:flutter_weather/view_models/global_style.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class WeatherContent extends StatelessWidget {
-  final timeType;
-  final temperatureType;
-  final themeType;
   final WeatherData weather;
 
   WeatherContent({
     Key key,
-    this.timeType,
-    this.temperatureType,
-    this.themeType,
     @required this.weather,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    GlobalStyle style = context.watch<GlobalStyle>();
+    int timeType = style.timeType;
+    int temperatureType = style.temperatureType;
+    int themeType = style.themeType;
+
     final units = temperatureType == 0 ? '°C' : '°F';
     final hourString = timeType == 0
         ? DateFormat.jm().format(weather.date)

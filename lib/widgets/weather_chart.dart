@@ -2,21 +2,19 @@ import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:flutter/material.dart';
 import 'package:flutter_weather/models/forecast_data.dart';
 import 'package:flutter_weather/models/weather_data.dart';
+import 'package:flutter_weather/view_models/global_style.dart';
+import 'package:provider/provider.dart';
 
 class WeatherChart extends StatelessWidget {
-  final temperatureType;
   final List<charts.Series<TemperatureRow, DateTime>> seriesList;
   final List staticTicks;
   final bool animate;
 
-  WeatherChart(this.temperatureType, this.seriesList, this.staticTicks,
-      {this.animate});
+  WeatherChart(this.seriesList, this.staticTicks, {this.animate});
 
-  factory WeatherChart.withForecastData(
-      ForecastData data, int temperatureType) {
+  factory WeatherChart.withForecastData(ForecastData data) {
     List<WeatherData> list = data.list.sublist(0, 12);
     return WeatherChart(
-      temperatureType,
       _createForecastData(list),
       _createForecastTicks(list),
       animate: false,
@@ -25,7 +23,8 @@ class WeatherChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final units = temperatureType == 0 ? '°C' : '°F';
+    final units =
+        context.watch<GlobalStyle>().temperatureType == 0 ? '°C' : '°F';
 
     final customTickFormatter =
         charts.BasicNumericTickFormatterSpec((num value) => '$value$units');
@@ -87,5 +86,6 @@ class WeatherChart extends StatelessWidget {
 class TemperatureRow {
   final DateTime timeStamp;
   final double temperature;
+
   TemperatureRow(this.timeStamp, this.temperature);
 }

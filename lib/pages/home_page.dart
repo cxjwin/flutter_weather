@@ -6,9 +6,11 @@ import 'package:flutter_weather/models/weather_data.dart';
 import 'package:flutter_weather/pages/locations_page.dart';
 import 'package:flutter_weather/services/weather_service.dart';
 import 'package:flutter_weather/utils/secrets.dart';
+import 'package:flutter_weather/view_models/global_style.dart';
 import 'package:flutter_weather/widgets/weather_chart.dart';
 import 'package:flutter_weather/widgets/weather_content.dart';
 import 'package:flutter_weather/widgets/weather_item.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -23,10 +25,8 @@ class _HomePageState extends State<HomePage> {
   WeatherData _weatherData;
   ForecastData _forecastData;
   ForecastData _forecastDailyData;
-  int _timeType = 0;
-  int _temperatureType = 0;
-  int _themeType = 0;
 
+  DatabaseManager manager = DatabaseManager();
   WeatherService service = WeatherService();
 
   @override
@@ -42,7 +42,15 @@ class _HomePageState extends State<HomePage> {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    final bgImage = AssetImage('assets/images/theme_$_themeType.jpg');
+    int themeType = context.watch<GlobalStyle>().themeType;
+
+    DecorationImage bgImage;
+    if (themeType >= 0) {
+      bgImage = DecorationImage(
+        image: AssetImage('assets/images/theme_$themeType.jpg'),
+        fit: BoxFit.cover,
+      );
+    }
 
     final weatherContent = ListView(
       children: <Widget>[
@@ -50,9 +58,6 @@ class _HomePageState extends State<HomePage> {
           padding: const EdgeInsets.fromLTRB(8, 24, 8, 8),
           child: _weatherData != null
               ? WeatherContent(
-                  timeType: _timeType,
-                  temperatureType: _temperatureType,
-                  themeType: _themeType,
                   weather: _weatherData,
                 )
               : Container(),
@@ -69,7 +74,8 @@ class _HomePageState extends State<HomePage> {
                   child: Container(
                     margin: const EdgeInsets.all(8),
                     child: WeatherChart.withForecastData(
-                        _forecastData, _temperatureType),
+                      _forecastData,
+                    ),
                   ),
                 )
               : Container(),
@@ -88,10 +94,8 @@ class _HomePageState extends State<HomePage> {
                     : 10,
                 scrollDirection: Axis.horizontal,
                 itemBuilder: (context, index) => WeatherItem(
-                      timeType: _timeType,
-                      temperatureType: _temperatureType,
-                      weather: _forecastDailyData.list.elementAt(index),
-                    ),
+                  weather: _forecastDailyData.list.elementAt(index),
+                ),
               )
             : Container(),
       ),
@@ -142,10 +146,7 @@ class _HomePageState extends State<HomePage> {
         onRefresh: loadWeather,
         child: Container(
           decoration: BoxDecoration(
-            image: DecorationImage(
-              image: bgImage,
-              fit: BoxFit.cover,
-            ),
+            image: bgImage,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -188,13 +189,7 @@ class _HomePageState extends State<HomePage> {
       return;
     }
     if (result == 1) {
-      DatabaseManager manager = DatabaseManager();
-      int timeType = await manager.query("time_type");
-      int themeType = await manager.query("theme_type");
-      setState(() {
-        _timeType = timeType;
-        _themeType = themeType;
-      });
+      setState(() {});
     } else if (result == 2) {
       _refreshIndicatorKey.currentState.show();
       loadWeather();
@@ -206,13 +201,10 @@ class _HomePageState extends State<HomePage> {
       _isLoading = true;
     });
 
-    DatabaseManager manager = DatabaseManager();
     await manager.init();
     await SecretLoader().load();
 
-    int timeType = await manager.query("time_type");
     int temperatureType = await manager.query("temperature_type");
-    int themeType = await manager.query("theme_type");
 
     service.temperatureType = temperatureType;
     await service.getLocation();
@@ -233,9 +225,6 @@ class _HomePageState extends State<HomePage> {
 
     setState(() {
       _isLoading = false;
-      _timeType = timeType;
-      _temperatureType = temperatureType;
-      _themeType = themeType;
       _weatherData = weatherData;
       _forecastData = forecastData;
       _forecastDailyData = forecastDailyData;

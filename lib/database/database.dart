@@ -8,9 +8,7 @@ class DatabaseManager {
     return _singleton;
   }
 
-  DatabaseManager._internal() {
-    // this.init();
-  }
+  DatabaseManager._internal();
 
   Database database;
 
@@ -68,7 +66,7 @@ class DatabaseManager {
     final value = Sqflite.firstIntValue(await database.query("settings",
         columns: ["type_value"], where: "type_name = ?", whereArgs: [name]));
 
-    return value == null ? 0 : value;
+    return value ?? 0;
   }
 
   Future<void> insertLocation(Map<String, dynamic> loc) async {

@@ -1,7 +1,9 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_weather/database/database.dart';
+import 'package:flutter_weather/view_models/global_style.dart';
 import 'package:flutter_weather/widgets/segment_control.dart';
+import 'package:provider/provider.dart';
 
 class SettingsPage extends StatefulWidget {
   @override
@@ -9,43 +11,28 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  Map<String, int> _oldSettings = {};
-  Map<String, int> _settings = {};
-
-  Future<void> loadSettings() async {
-    DatabaseManager manager = DatabaseManager();
-    int timeType = await manager.query("time_type");
-    int temperatureType = await manager.query("temperature_type");
-    int themeType = await manager.query("theme_type");
-
-    final settings = {
-      'time_type': timeType,
-      'temperature_type': temperatureType,
-      'theme_type': themeType,
-    };
-
-    _oldSettings = Map<String, int>.from(settings);
-
-    setState(() {
-      _settings = settings;
-    });
-  }
+  DatabaseManager manager = DatabaseManager();
 
   @override
   void initState() {
     super.initState();
-    loadSettings();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
   }
 
   @override
   Widget build(BuildContext context) {
-    int timeType = _settings['time_type'];
-    int temperatureType = _settings['temperature_type'];
-    int themeType = _settings['theme_type'];
+    GlobalStyle style = context.watch<GlobalStyle>();
+    int timeType = style.timeType;
+    int temperatureType = style.temperatureType;
+    int themeType = style.themeType;
 
     Widget buildHeader(String text) => Container(
           height: 40,
-          padding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+          padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
           alignment: Alignment.centerLeft,
           child: Text(text, style: Theme.of(context).textTheme.title),
         );
@@ -94,7 +81,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ),
                 Container(
-                  padding: EdgeInsets.fromLTRB(0, 12, 12, 0),
+                  padding: const EdgeInsets.fromLTRB(0, 12, 12, 0),
                   alignment: Alignment.topRight,
                   child: Icon(Icons.check_circle_outline, color: Colors.white),
                 ),
@@ -148,23 +135,12 @@ class _SettingsPageState extends State<SettingsPage> {
           icon: const BackButtonIcon(),
           tooltip: MaterialLocalizations.of(context).backButtonTooltip,
           onPressed: () {
-            final res =
-                !DeepCollectionEquality().equals(_settings, _oldSettings);
-
-            var type = 0;
-            if (res) {
-              type = 1;
-              if (_settings['temperature_type'] !=
-                  _oldSettings['temperature_type']) {
-                type = 2;
-              }
-            }
-            Navigator.pop(context, type);
+            Navigator.pop(context, 1);
           },
         ),
       ),
       body: ListView.separated(
-        padding: EdgeInsets.fromLTRB(0, 20, 0, 40),
+        padding: const EdgeInsets.fromLTRB(0, 20, 0, 40),
         itemCount: children.length,
         itemBuilder: (context, index) {
           return children[index];
@@ -177,25 +153,14 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   selectTimeType(int index) {
-    DatabaseManager manager = DatabaseManager();
-    manager.set("time_type", index);
-    _settings['time_type'] = index;
+    context.read<GlobalStyle>().timeType = index;
   }
 
   selectTemperatureType(int index) {
-    DatabaseManager manager = DatabaseManager();
-    manager.set("temperature_type", index);
-    _settings['temperature_type'] = index;
+    context.read<GlobalStyle>().temperatureType = index;
   }
 
   selectThemeType(int index) {
-    DatabaseManager manager = DatabaseManager();
-    manager.set("theme_type", index);
-    _settings['theme_type'] = index;
-    final settings = Map<String, int>.from(_settings);
-    // update UI
-    setState(() {
-      _settings = settings;
-    });
+    context.read<GlobalStyle>().themeType = index;
   }
 }
