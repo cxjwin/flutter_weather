@@ -8,14 +8,14 @@ import 'package:http/http.dart' as http;
 import 'package:location/location.dart';
 
 class WeatherService {
+  // Base
+  static const kBaseHost = "api.openweathermap.org";
   // Current weather data
-  static const kWeatherAPI = "https://api.openweathermap.org/data/2.5/weather";
+  static const kWeatherPath = "/data/2.5/weather";
   // 5 day / 3 hour forecast
-  static const kForecastAPI =
-      "https://api.openweathermap.org/data/2.5/forecast";
+  static const kForecastPath = "/data/2.5/forecast";
   // 16 day / daily forecast
-  static const kForecastDailyAPI =
-      "https://api.openweathermap.org/data/2.5/forecast/daily";
+  static const kForecastDailyPath = "/data/2.5/forecast/daily";
 
   int temperatureType = 0;
 
@@ -65,13 +65,13 @@ class WeatherService {
     if (_appId == null || _appId.length == 0) {
       return null;
     }
-
-    final tail = temperatureType == 0 ? 'units=metric' : 'units=imperial';
-
-    final query =
-        'APPID=$_appId&lat=${this.lat.toString()}&lon=${this.lon.toString()}&$tail';
-    final weatherResponse = await http
-        .get('https://api.openweathermap.org/data/2.5/weather?$query');
+    final uri = Uri.http(kBaseHost, kWeatherPath, {
+      'APPID': _appId,
+      'lat': this.lat.toString(),
+      'lon': this.lon.toString(),
+      'units': temperatureType == 0 ? 'metric' : 'imperial',
+    });
+    final weatherResponse = await http.get(uri);
 
     if (weatherResponse.statusCode == 200) {
       return WeatherData.fromJson(jsonDecode(weatherResponse.body));
@@ -85,11 +85,13 @@ class WeatherService {
       return null;
     }
 
-    final tail = temperatureType == 0 ? 'units=metric' : 'units=imperial';
-
-    final query =
-        'APPID=$_appId&lat=${this.lat.toString()}&lon=${this.lon.toString()}&$tail';
-    final forecastResponse = await http.get('$kForecastAPI?$query');
+    final uri = Uri.http(kBaseHost, kForecastPath, {
+      'APPID' : _appId,
+      'lat' : this.lat.toString(),
+      'lon' : this.lon.toString(),
+      'units' : temperatureType == 0 ? 'metric' : 'imperial'
+    });
+    final forecastResponse = await http.get(uri);
 
     if (forecastResponse.statusCode == 200) {
       return ForecastData.fromJson(jsonDecode(forecastResponse.body));
@@ -103,11 +105,13 @@ class WeatherService {
       return null;
     }
 
-    final tail = temperatureType == 0 ? 'units=metric' : 'units=imperial';
-
-    final query =
-        'APPID=$_appId&lat=${this.lat.toString()}&lon=${this.lon.toString()}&$tail';
-    final forecastResponse = await http.get('$kForecastDailyAPI?$query');
+    final uri = Uri.http(kBaseHost, kForecastDailyPath, {
+      'APPID' : _appId,
+      'lat' : this.lat.toString(),
+      'lon' : this.lon.toString(),
+      'units' : temperatureType == 0 ? 'metric' : 'imperial'
+    });
+    final forecastResponse = await http.get(uri);
 
     if (forecastResponse.statusCode == 200) {
       return ForecastData.fromDailyJson(jsonDecode(forecastResponse.body));
